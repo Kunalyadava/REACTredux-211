@@ -1,0 +1,138 @@
+CUSTOM HOOKS
+A custom Hook is a JavaScript function whose name 
+starts with ”use” and that may call other Hooks.
+
+There’s nothing new inside of it — the logic is copied from the components.
+
+Unlike a React component, a custom Hook doesn’t need 
+to have a specific signature. We can decide what it
+ takes as arguments, and what, if anything, it should return.
+  In other words, it’s just like a normal function.
+   Its name should always start with use so that you can 
+   tell at a glance that the rules of Hooks apply to it.
+
+It may feel like how you have written functions with closures
+
+useTimeout customHook
+
+export function useTimeout(delay) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let timer = setTimeout(() => setReady(true), delay);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return ready;
+}
+
+// Component
+export default function() {
+  // false
+  const isReady = useTimeout(2000);
+  return (
+    <div>
+      <h3> Custom Hooks </h3>
+    // will show up once ready
+      {isReady && "Ready"}
+    // will disappear when its ready
+      {!isReady && "Not Ready"}
+    </div>
+  );
+}
+
+
+useFetch custom Hook
+
+
+
+export function useFetch(url) {
+  // loading
+  // data
+  // error
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then(res => res.json())
+      .then(res => {
+        setData(res);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  return {
+    loading,
+    data,
+    error
+  };
+}
+
+useYourImagination()
+Custom Hooks offer the flexibility of sharing logic that wasn’t
+ possible in React components before. You can write custom Hooks that
+  cover a wide range of use cases like form handling, animation,
+   declarative subscriptions, timers, and probably many more we haven’t considered.
+    What’s more, you can build Hooks that are just as easy to use as React’s
+     built-in features.
+
+Docs
+
+Codesandbox
+
+useReducer
+const [state, dispatch] = useReducer(reducer, initialArg, init);
+
+An alternative to useState. Accepts a reducer of type
+ (state, action) => newState, and returns the current
+  state paired with a dispatch method. (If you’re familiar
+   with Redux, you already know how this works.)
+
+useReducer is usually preferable to useState when
+ you have complex state logic that involves
+  multiple sub-values or when the next state
+   depends on the previous one.
+
+const initialState = {count: 0};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    default:
+      throw new Error();
+  }
+}
+
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return (
+    <>
+      Count: {state.count}
+      <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+      <button onClick={() => dispatch({type: 'increment'})}>+</button>
+    </>
+  );
+}
+Note:
+React guarantees that dispatch function identity is
+ stable and won’t change on re-renders. This is why 
+ it’s safe to omit from the useEffect or dependency list.
+
+If you return the same value from a Reducer Hook as the 
+current state, React will bail out without rendering the
+ children or firing effects. (React uses the Object.is
+  comparison algorithm.)
+
+Note that React may still need to render that specific
+ component again before bailing out. That shouldn’t be a 
+ concern because React won’t unnecessarily go “deeper” into the tree.
